@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Validar imagen con Teachable Machine</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script> -->
+</head>
+<body>
+  <h1>Validador de Imagen con Teachable Machine</h1>
+  <input type="file" id="imageUpload" accept="image/*">
+  <br><br>
+  <img id="imagePreview" width="300" />
+  <p id="prediction">Esperando imagen...</p>
+
+  <script>
+    // Usa un nombre distinto para evitar conflicto con window.URL
+    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/_EwLebXWb/"; // ← Reemplaza con tu enlace
+
+    let model;
+
+    async function loadModel() {
+      model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+      console.log("Modelo cargado");
+    }
+
+    async function predictImage(image) {
+      const predictions = await model.predict(image);
+      let result = "";
+      predictions.forEach(p => {
+        result += `${p.className}: ${(p.probability * 100).toFixed(2)}%<br>`;
+      });
+      document.getElementById("prediction").innerHTML = result;
+    }
+
+    document.getElementById("imageUpload").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      const image = document.getElementById("imagePreview");
+      image.src = window.URL.createObjectURL(file); // Usa window.URL para asegurar que es el objeto correcto
+      image.onload = () => predictImage(image);
+    });
+
+    loadModel();
+  </script>
+</body>
+</html>
